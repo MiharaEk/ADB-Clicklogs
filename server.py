@@ -3,12 +3,16 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 from datetime import datetime
 
+#enable cors
+from flask_cors import CORS
+
 # Initialize Firebase
 cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 # Serve index.html
 @app.route('/')
@@ -28,24 +32,24 @@ def serve_2x(filename):
 # Endpoint to save taps
 @app.route('/saveTaps', methods=['POST'])
 def save_taps():
-    data = request.json
+    data = request.json or {}
 
     # Convert timestamps (sent as ISO strings from frontend)
     try:
-        start = datetime.fromisoformat(data['startTime'].replace("Z", ""))
-        end = datetime.fromisoformat(data['endTime'].replace("Z", ""))
+        start = datetime.fromisoformat(data.get['startTime'].replace("Z", ""))
+        end = datetime.fromisoformat(data.get['endTime'].replace("Z", ""))
         duration = (end - start).total_seconds()
     except Exception:
-        duration = data['endTime'] - data['startTime']  # fallback if numbers
+        duration = data.get['endTime'] - data.get['startTime']  # fallback if numbers
 
     record = {
-        "tapSequence": data['tapSequence'],
-        "startTime": data['startTime'],
-        "endTime": data['endTime'],
+        "tapSequence": data.get['tapSequence'],
+        "startTime": data.get['startTime'],
+        "endTime": data.get['endTime'],
         "duration": duration,
-        "interfaceType": data['interfaceType'],
-        "sessionId": data['sessionId'],
-        "devicePlatform": data['devicePlatform']
+        "interfaceType": data.get['interfaceType'],
+        "sessionId": data.get['sessionId'],
+        "devicePlatform": data.get['devicePlatform']
     }
 
     # Save to Firestore
