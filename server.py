@@ -32,30 +32,48 @@ def serve_2x(filename):
 # Endpoint to save taps
 @app.route('/saveTaps', methods=['POST'])
 def save_taps():
-    data = request.json or {}
-
-    # Convert timestamps (sent as ISO strings from frontend)
     try:
-        start = datetime.fromisoformat(data.get['startTime'].replace("Z", ""))
-        end = datetime.fromisoformat(data.get['endTime'].replace("Z", ""))
-        duration = (end - start).total_seconds()
-    except Exception:
-        duration = data.get['endTime'] - data.get['startTime']  # fallback if numbers
+        # data = request.json
+        data = request.get_json(force=True) or {}
 
-    record = {
-        "tapSequence": data.get['tapSequence'],
-        "startTime": data.get['startTime'],
-        "endTime": data.get['endTime'],
-        "duration": duration,
-        "interfaceType": data.get['interfaceType'],
-        "sessionId": data.get['sessionId'],
-        "devicePlatform": data.get['devicePlatform']
-    }
 
-    # Save to Firestore
-    db.collection("tap_logs").add(record)
+        start_raw = data.get('startTime')
+        end_raw = data.get('endTime')
+        duration = None
 
-    return jsonify({"status": "success", "record": record})
+        if start_raw and end_raw:
+        # Convert timestamps (sent as ISO strings from frontend)
+            try:
+                start = datetime.fromisoformat(start_raw.replace("Z", ""))
+                end = datetime.fromisoformat(end_raw.replace("Z", ""))
+                duration = (end - start).total_seconds()
+            except Exception:
+                try:
+                    # Fallback if numeric timestamps
+                    duration = float(end_raw) - float(start_raw)
+                except Exception:
+                    duration = None
+
+                # duration = data.get('endTime') - data.get('startTime')  # fallback if numbers
+
+        record = {
+            "tapSequence": data.get('tapSequence'),
+            "startTime": data.get('startTime'),
+            "endTime": data.get('endTime'),
+            "duration": duration,
+            "interfaceType": data.get['interfaceType'],
+            "sessionId": data.get['sessionId'],
+            "devicePlatform": data.get['devicePlatform']
+        }
+
+        # Save to Firestore
+        db.collection("tap_logs").add(record)
+
+        return jsonify({"status": "success", "record": record})
+    
+    except Exception as e:
+        print("Error in /saveTaps:", e)
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
