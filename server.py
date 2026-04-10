@@ -44,8 +44,8 @@ def save_taps():
         if start_raw and end_raw:
         # Convert timestamps (sent as ISO strings from frontend)
             try:
-                start = datetime.fromisoformat(start_raw.replace("Z", ""))
-                end = datetime.fromisoformat(end_raw.replace("Z", ""))
+                start = datetime.fromisoformat(str(start_raw).replace("Z", ""))
+                end = datetime.fromisoformat(str(end_raw).replace("Z", ""))
                 duration = (end - start).total_seconds()
             except Exception:
                 try:
@@ -58,18 +58,18 @@ def save_taps():
 
         record = {
             "tapSequence": data.get('tapSequence'),
-            "startTime": data.get('startTime'),
-            "endTime": data.get('endTime'),
+            "startTime": start_raw,
+            "endTime": end_raw,
             "duration": duration,
-            "interfaceType": data.get['interfaceType'],
-            "sessionId": data.get['sessionId'],
-            "devicePlatform": data.get['devicePlatform']
+            "interfaceType": data.get('interfaceType'),
+            "sessionId": data.get('sessionId'),
+            "devicePlatform": data.get('devicePlatform')
         }
 
         # Save to Firestore
         db.collection("tap_logs").add(record)
 
-        return jsonify({"status": "success", "record": record})
+        return jsonify({"status": "success", "record": record}, 200)
     
     except Exception as e:
         print("Error in /saveTaps:", e)
