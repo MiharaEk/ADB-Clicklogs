@@ -63,7 +63,8 @@ def save_taps():
             "duration": duration,
             "interfaceType": data.get('interfaceType'),
             "sessionId": data.get('sessionId'),
-            "devicePlatform": data.get('devicePlatform')
+            "devicePlatform": data.get('devicePlatform'),
+            "source": "hosted-frontend"
         }
 
         # Save to Firestore

@@ -112,6 +112,10 @@
 
 			//Python Backend Call Function
 			function syncToServer(tap) {
+
+				//tag the source of the tap
+				tap.source = "hosted-frontend";
+
 				fetch(" https://subconnivent-undandled-teisha.ngrok-free.dev/saveTaps", {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
